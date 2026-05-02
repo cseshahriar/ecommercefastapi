@@ -10,9 +10,13 @@ pip freeze > requirements.txt
 fastapi dev app/main.py
 
 alembic init -t async alembic
-
 alembic revision --autogenerate -m "create table"
-
 alembic upgrade head
-
 alembic stamp head
+
+.env variables
+DB_USER=
+DB_PASS=
+DB_NAME=
+DB_PORT=3306
+DB_HOST=localhost
