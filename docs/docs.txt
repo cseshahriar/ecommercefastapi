@@ -22,6 +22,8 @@ alembic revision --autogenerate -m "Create product and category tables"
 # after delete alembic version
 alembic stamp head
 
+ALTER TABLE products AUTO_INCREMENT = 1;
+
 .env variables
 DB_USER=
 DB_PASS=

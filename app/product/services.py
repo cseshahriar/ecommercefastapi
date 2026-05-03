@@ -1,5 +1,7 @@
 from os import name
 
+
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy import select, func, and_
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -66,13 +68,24 @@ async def create_product(
         categories = category_result.scalars().all()
 
     product_dict = data.model_dump(exclude={"category_ids"})
+
+    # Generate slug if not provided
     if not product_dict.get("slug"):
-        product_dict["slug"] = generate_slug(product_dict.get("title"))
+        product_dict["slug"] = generate_slug(product_dict["title"])
+
+    # Check if slug already exists
+    existing = await session.execute(
+        select(Product.id).where(Product.slug == product_dict["slug"])
+    )
+    if existing.scalar_one_or_none():
+        raise HTTPException(
+            status_code=400,
+            detail="Slug already exists. Please use a different title or slug.",
+        )
 
     new_product = Product(**product_dict, image_url=image_path, categories=categories)
     session.add(new_product)
     await session.commit()
-    await session.refresh(new_product)
     return new_product
 
 
@@ -91,12 +104,14 @@ async def get_all_products(
         )
 
     count_stmt = stmt.with_only_columns(func.count(Product.id)).order_by(None)
-    total = await session.scalars(count_stmt)
+    count_result = await session.execute(count_stmt)
+    total = count_result.scalar_one()
 
-    stmt = stmt.limit(limit).offset((page + 1) * limit)
+    stmt = stmt.limit(limit).offset((page - 1) * limit)
 
     result = await session.execute(stmt)
     products = result.scalars().all()
+
     return {"total": total, "page": page, "limit": limit, "items": products}
 
 
@@ -137,7 +152,8 @@ async def search_products(
         stmt = stmt.where(and_(*filters))
 
     count_stmt = stmt.with_only_columns(func.count(Product.id)).order_by(None)
-    total = await session.scalars(count_stmt)
+    result = await session.execute(count_stmt)
+    total = result.scalar_one()
 
     stmt = stmt.limit(limit).offset((page - 1) * limit)
     result = await session.execute(stmt)
@@ -170,11 +186,12 @@ async def update_product_by_id(
     )
     result = await session.execute(query)
     product = result.scalar_one_or_none()
+
     if not product:
         return None
 
     if data.category_ids is not None:
-        category_query = select(Category.id.in_(data.category_ids))
+        category_query = select(Category).where(Category.id.in_(data.category_ids))
         category_result = await session.execute(category_query)
         product.categories = category_result.scalars().all()
 
@@ -195,9 +212,13 @@ async def update_product_by_id(
 async def delete_product(session: AsyncSession, product_id: int) -> bool:
     stmt = select(Product).where(Product.id == product_id)
     result = await session.execute(stmt)
-    product = result.scalars()  # single
+
+    product = result.scalar_one_or_none()
+
     if not product:
-        return None
+        raise HTTPException(status_code=404, detail="Product not found")
+
     await session.delete(product)
     await session.commit()
+
     return True
