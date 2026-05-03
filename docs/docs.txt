@@ -17,6 +17,11 @@ alembic stamp head
 alembic revision --autogenerate -m "Create user and refresh token tables"
 alembic upgrade head
 
+alembic revision --autogenerate -m "Create product and category tables"
+
+# after delete alembic version
+alembic stamp head
+
 .env variables
 DB_USER=
 DB_PASS=
