@@ -1,11 +1,14 @@
 from datetime import datetime, timezone
-
 from alembic import autogenerate
+from typing import TYPE_CHECKING
 
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import Nullable, String, Integer, Boolean, ForeignKey, DateTime
 
 from app.db.base import Base
+
+if TYPE_CHECKING:  # circular import solve
+    from app.cart.models import CartItem
 
 
 class User(Base):
@@ -32,6 +35,9 @@ class User(Base):
 
     refresh_tokens: Mapped[list["RefreshToken"]] = relationship(
         "RefreshToken", back_populates="user", cascade="all, delete-orphan"
+    )
+    cart_items: Mapped[list["CartItem"]] = relationship(
+        "CartItem", back_populates="user", cascade="all, delete-orphan"
     )
 
 

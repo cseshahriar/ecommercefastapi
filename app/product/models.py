@@ -1,10 +1,15 @@
 from typing import TYPE_CHECKING
 from datetime import datetime, timezone
+from typing import TYPE_CHECKING
 
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, Integer, Float, DateTime, ForeignKey, Table, Column, Text
 
 from app.db.base import Base
+
+if TYPE_CHECKING:
+    from app.cart.models import CartItem
+
 
 # Association table for many-to-many relationship between Product and Category
 product_category_table = Table(
@@ -43,10 +48,14 @@ class Product(Base):
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
     )
+
     categories: Mapped[list["Category"]] = relationship(
         "Category",
         secondary=product_category_table,
         back_populates="products",
+    )
+    cart_items: Mapped[list["CartItem"]] = relationship(
+        "CartItem", back_populates="product"
     )
 
 
