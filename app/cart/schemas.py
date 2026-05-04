@@ -7,7 +7,7 @@ class CartItemBase(BaseModel):
 
 
 class CartItemCreate(CartItemBase):
-    pass
+    price: float | None = None
 
 
 class CartItemResponse(BaseModel):
@@ -19,7 +19,7 @@ class CartItemResponse(BaseModel):
     price: float
     total: float
     model_config = {
-        "form_attributes": true
+        "form_attributes": True
     }
 
 
