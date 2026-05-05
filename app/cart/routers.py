@@ -15,7 +15,7 @@ async def list_user_cart_item(
     session: SessionDep,
     user: User = Depends(get_current_user)
 ):
-    return list_user_cart(session, user.id)
+    return await list_user_cart(session, user.id)
 
 @router.post("/add", response_model=CartItemResponse)
 async def add_item_to_cart(
