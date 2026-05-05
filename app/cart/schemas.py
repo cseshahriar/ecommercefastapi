@@ -7,7 +7,7 @@ class CartItemBase(BaseModel):
 
 
 class CartItemCreate(CartItemBase):
-    price: float | None = None
+    pass
 
 
 class CartItemResponse(BaseModel):

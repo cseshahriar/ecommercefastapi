@@ -10,6 +10,7 @@ from sqlalchemy.orm import selectinload
 
 async def list_user_cart(session: AsyncSession, user_id: int) -> CartSummary:
     query = select(CartItem).where(CartItem.user_id==user_id).options(selectinload(CartItem.product))
+    # selectinload: Fetch all related products in ONE extra query like select_related
     result = await session.execute(query)
     cart_items = result.scalars().all() 
 
@@ -47,7 +48,7 @@ async def list_user_cart(session: AsyncSession, user_id: int) -> CartSummary:
 async def add_to_cart(session: AsyncSession, user_id: int, data: CartItemCreate):
     product = await session.get(Product, data.product_id)
     if not product:
-        raise HTTPException(status_code=status.HTTP_404_NO_FOUND, detail="Product not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
 
     if product.stock_quantity < data.quantity:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Insufficient stock")

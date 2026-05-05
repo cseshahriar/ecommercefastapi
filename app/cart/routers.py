@@ -23,7 +23,7 @@ async def add_item_to_cart(
     item: CartItemCreate,
     user: User = Depends(get_current_user)
 ):
-    return await add_to_cart(session, item, user.id)
+    return await add_to_cart(session, user.id, item)
 
 
 @router.patch("/increase/{product_id}", response_model=CartItemResponse)
