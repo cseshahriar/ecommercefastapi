@@ -49,4 +49,4 @@ async def cart_item_delete(
   item_id: int, 
   user: User = Depends(get_current_user)
 ):
-  await delete_cart_item(session, item_id)
+  return await delete_cart_item(session, item_id)

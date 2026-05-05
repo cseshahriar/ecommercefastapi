@@ -89,7 +89,7 @@ async def chagne_cart_item_quantity_by_product(
     user_id: int, 
     delta: int
 ):
-    product = await session.get(Product, data.product_id)
+    product = await session.get(Product, product_id)
     if not product:
         raise HTTPException(status_code=status.HTTP_404_NO_FOUND, detail="Product not found")
     
@@ -140,13 +140,13 @@ async def chagne_cart_item_quantity_by_product(
     await session.refresh(cart_item)
 
     return CartItemResponse(
-        id=item.id,
-        product_id=item.product_id,
+        id=cart_item.id,
+        product_id=cart_item.product_id,
         user_id=user_id,
         product_title=product.title,
-        quantity=item.quantity,
-        price=item.price,
-        total=round(product.price * item.quantity, 2)
+        quantity=cart_item.quantity,
+        price=cart_item.price,
+        total=round(product.price * cart_item.quantity, 2)
     )
 
 
