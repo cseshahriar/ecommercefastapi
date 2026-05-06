@@ -10,6 +10,10 @@ from app.account.models import User
 from app.db.base import Base
 
 
+if TYPE_CHECKING:
+    from app.order.models import Order
+
+
 class ShippingStatusEnum(PyEnum):
     pending = "pending"
     processing = "processing"
@@ -34,12 +38,16 @@ class ShippingAddress(Base):
     country: Mapped[str] = mapped_column(String(100), nullable=False)
 
     user: Mapped["User"] = relationship("User", back_populates="shipping_addresses")
+    orders: Mapped[list["Order"]] = relationship("Order", back_populates="shipping_address")
 
 
 class ShippingStatus(Base):
     __tablename__ = "shipping_status"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    order_id: Mapped[int] = mapped_column(
+        ForeignKey("orders.id", ondelete="CASCADE"), nullable=False
+    )
     status: Mapped[ShippingStatusEnum] = mapped_column(
         Enum(ShippingStatusEnum), default=ShippingStatusEnum.pending
     )
@@ -47,3 +55,4 @@ class ShippingStatus(Base):
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc)
     )
+    order: Mapped["Order"] = relationship("Order", back_populates="shipping_status")
