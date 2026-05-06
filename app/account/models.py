@@ -9,6 +9,7 @@ from app.db.base import Base
 
 if TYPE_CHECKING:  # circular import solve
     from app.cart.models import CartItem
+    from app.shipping.models import ShippingAddress
 
 
 class User(Base):
@@ -38,6 +39,9 @@ class User(Base):
     )
     cart_items: Mapped[list["CartItem"]] = relationship(
         "CartItem", back_populates="user", cascade="all, delete-orphan"
+    )
+    shipping_addresses: Mapped[list["ShippingAddress"]] = relationship(
+        "ShippingAddress", back_populates="user", cascade="all, delete-orphan"
     )
 
 
