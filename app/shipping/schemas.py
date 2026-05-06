@@ -1,6 +1,6 @@
 from datetime import datetime
 from pydantic import BaseModel
-from app.shipping import ShippingStatusEnum
+from app.shipping.models import ShippingStatusEnum
 
 
 class ShippingAddressBase(BaseModel):
