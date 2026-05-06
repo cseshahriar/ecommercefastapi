@@ -17,7 +17,7 @@ async def create_shipping_address(
     await session.refresh(address)
     return address
 
-async def list_user_shipping_address(
+async def list_user_shipping_addresses(
     session: AsyncSession, user_id: int
 ) -> list[ShippingAddressResponse]:
     query = select(ShippingAddress).where(ShippingAddress.user_id==user_id)
@@ -37,7 +37,7 @@ async def get_user_shipping_address_by_address_id(
 async def update_user_shipping_address_by_address_id(
     session: AsyncSession,
     address_id: int,
-    user_id: int
+    user_id: int,
     data: ShippingAddressUpdate
 ) -> ShippingAddressResponse:
     address = await session.get(ShippingAddress, address_id)
