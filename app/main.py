@@ -8,7 +8,8 @@ from app.product.routers.category_router import router as category_router
 from app.product.routers.product_router import router as product_router
 from app.cart.routers import router as cart_router
 from app.shipping.routers import router as shipping_router
-
+from app.order.routers import router as order_router
+from app.payment.routers import router as payment_router
 
 app = FastAPI(
     title="FastAPI E-Commerce Backend",
@@ -40,3 +41,5 @@ app.include_router(
 )
 app.include_router(cart_router, prefix="/api/carts", tags=["Carts"])
 app.include_router(shipping_router, prefix="/api/shippings", tags=["Shippings"])
+app.include_router(order_router, prefix="/api/orders", tags=["Orders"])
+app.include_router(payment_router, prefix="/api/payments", tags=["Payments"])
