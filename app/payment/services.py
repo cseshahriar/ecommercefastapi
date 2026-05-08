@@ -23,8 +23,10 @@ async def create_payment(
         pg_order_id, pg_payment_id, pg_signature = generate_mock_ids()
     elif gateway == PaymentGatewayEnum.bkash:
         # Integration will be implemented here in the future
+        pass
     elif gateway == PaymentGatewayEnum.sslcommerz:
         # Integration will be implemented here in the future
+        pass
     else:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Unsupported payment gateway")
 
