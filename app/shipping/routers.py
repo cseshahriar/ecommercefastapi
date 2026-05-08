@@ -11,7 +11,8 @@ from app.shipping.models import ShippingAddress
 from app.shipping.services import (
     create_shipping_address, delete_shipping_address_by_address_id, 
     get_user_shipping_address_by_address_id, list_user_shipping_addresses, 
-    update_user_shipping_address_by_address_id
+    update_shipping_status, update_user_shipping_address_by_address_id,
+    get_user_order_shipping_status
 )
 
 
@@ -61,3 +62,23 @@ async def shipping_address_delete_by_address_id(
     user: User = Depends(get_current_user)
 ):
     return await delete_shipping_address_by_address_id(session, user.id, address_id)
+
+
+
+@router.get("/status/{order_id}", response_model=ShippingStatusResponse)
+async def shipping_status_for_user_order(
+  session: SessionDep,
+  order_id: int,
+  user: User = Depends(get_current_user)
+):
+  return await get_user_order_shipping_status(session, order_id, user.id)
+  
+
+@router.patch("/status/{order_id}", response_model=ShippingStatusResponse)
+async def change_shipping_status(
+    session: SessionDep,
+    order_id: int,
+    data: ShippingStatusUpdate,
+    admin_user = Depends(require_admin)  # Only admin can update
+):
+    return await update_shipping_status(session, order_id, data.status)
