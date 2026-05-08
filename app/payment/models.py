@@ -22,7 +22,6 @@ class PaymentStatusEnum(str, PyEnum):
 class PaymentGatewayEnum(str, PyEnum):
     mock = "mock"
     bkash = "bkash"
-    razorpay = "razorpay"
     sslcommerz = "sslcommerz"
 
 
