@@ -21,7 +21,7 @@ async def get_payment_status_by_order(
     return payment
 
 
-@router.get("", response_model=PaymentResponse)
+@router.get("", response_model=list[PaymentResponse])
 async def get_all_payment_by_user(
     session: SessionDep,
     user: User = Depends(get_current_user)
