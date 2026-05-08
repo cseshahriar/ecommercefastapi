@@ -9,6 +9,7 @@ from app.db.base import Base
 
 if TYPE_CHECKING:  # circular import solve
     from app.cart.models import CartItem
+    from app.payment.models import Payment
     from app.shipping.models import ShippingAddress
 
 
@@ -43,7 +44,9 @@ class User(Base):
     shipping_addresses: Mapped[list["ShippingAddress"]] = relationship(
         "ShippingAddress", back_populates="user", cascade="all, delete-orphan"
     )
-
+    payments: Mapped[list["Payment"]] = relationship(
+        "Payment", back_populates="user", cascade="all, delete-orphan"
+    )
 
 class RefreshToken(Base):
     __tablename__ = "refresh_tokens"
