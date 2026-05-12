@@ -110,6 +110,14 @@ async def product_update_by_id(
     return product
 
 
+@router.get("/{slug}", response_model=ProductResponse)
+async def product_get_by_slug(session: SessionDep, slug: str):
+  product = await get_product_by_slug(session, slug)
+  if not product:
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
+  return product
+
+
 @router.delete("/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def product_delete(
     session: SessionDep, product_id: int, admin_user: User = Depends(require_admin)

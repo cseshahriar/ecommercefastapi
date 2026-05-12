@@ -170,7 +170,7 @@ async def get_product_by_slug(
         .where(Product.slug == slug)
     )
     result = await session.execute(stmt)
-    return result.scalars()
+    return result.scalar_one()
 
 
 async def update_product_by_id(
