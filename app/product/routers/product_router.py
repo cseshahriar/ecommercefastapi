@@ -74,6 +74,8 @@ async def product_search(
     page: int = Query(default=1, ge=1),
 ):
     return await search_products(
+        title=title,
+        description=description,
         session=session,
         category_names=categories,
         min_price=min_price,
