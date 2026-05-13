@@ -23,6 +23,9 @@ from app.account.services import (
     verify_password_reset_token,
 )
 from app.account.utils import create_tokens, revoke_refresh_token, verify_refresh_token
+from decouple import config
+
+DEBUG = config("DEBUG")
 
 router = APIRouter()
 
@@ -48,7 +51,7 @@ async def login(session: SessionDep, user_login: UserLogin):
         key="access_token",
         value=tokens["access_token"],
         httponly=True,
-        secure=True,
+        secure=False if DEBUG else True,  # Development: False, Production: True
         samesite="lax",
         max_age=60 * 60 * 24 * 1,
     )
@@ -56,7 +59,7 @@ async def login(session: SessionDep, user_login: UserLogin):
         key="refresh_token",
         value=tokens["refresh_token"],
         httponly=True,
-        secure=True,
+        secure=False if DEBUG else True,  # Development: False, Production: True
         samesite="lax",
         max_age=60 * 60 * 24 * 7,
     )
