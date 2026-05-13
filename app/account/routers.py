@@ -25,7 +25,7 @@ from app.account.services import (
 from app.account.utils import create_tokens, revoke_refresh_token, verify_refresh_token
 from decouple import config
 
-DEBUG = config("DEBUG")
+DEBUG = config("DEBUG", cast=bool)
 
 router = APIRouter()
 
@@ -51,15 +51,15 @@ async def login(session: SessionDep, user_login: UserLogin):
         key="access_token",
         value=tokens["access_token"],
         httponly=True,
-        secure=False if DEBUG else True,  # Development: False, Production: True
+        secure=not DEBUG,
         samesite="lax",
-        max_age=60 * 60 * 24 * 1,
+        max_age=60 * 60 * 24,
     )
     response.set_cookie(
         key="refresh_token",
         value=tokens["refresh_token"],
         httponly=True,
-        secure=False if DEBUG else True,  # Development: False, Production: True
+        secure=not DEBUG,
         samesite="lax",
         max_age=60 * 60 * 24 * 7,
     )
@@ -93,7 +93,7 @@ async def refresh_token(session: SessionDep, request: Request):
         key="access_token",
         value=tokens["access_token"],
         httponly=True,
-        secure=True,
+        secure=not DEBUG,  # Development: False, Production: True
         samesite="lax",
         max_age=60 * 60 * 24 * 1,
     )
@@ -101,7 +101,7 @@ async def refresh_token(session: SessionDep, request: Request):
         key="refresh_token",
         value=tokens["refresh_token"],
         httponly=True,
-        secure=True,
+        secure=not DEBUG,  # Development: False, Production: True
         samesite="lax",
         max_age=60 * 60 * 24 * 7,
     )
@@ -153,6 +153,6 @@ async def logout(
     if refresh_token:
         await revoke_refresh_token(session, refresh_token)
     response = JSONResponse(content={"detail": "Logged out"})
-    response.delete_cookie("refresh_token")
-    response.delete_cookie("access_token")
+    response.delete_cookie("refresh_token", samesite="lax")
+    response.delete_cookie("access_token", samesite="lax")
     return response

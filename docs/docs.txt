@@ -7,7 +7,8 @@ pip install "fastapi[standard]" sqlalchemy[asyncio] aiomysql alembic python-deco
 
 pip freeze > requirements.txt
 
-fastapi dev app/main.py
+fastapi dev app/main.py or
+uvicorn app.main:app --reload --host localhost --port 8000
 
 alembic init -t async alembic
 alembic revision --autogenerate -m "create table"
