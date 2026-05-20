@@ -2,12 +2,15 @@ import uuid
 
 from decouple import config
 from sqlalchemy import select
-from fastapi import HTTPException
+from fastapi import HTTPException, logger
 from passlib.context import CryptContext
 from datetime import timedelta, datetime, timezone
 from jose import jwt, JWTError, ExpiredSignatureError
 from sqlalchemy.ext.asyncio import AsyncSession
+import aiosmtplib
+from email.message import EmailMessage
 
+from app.logger import logger
 from app.account.models import RefreshToken, User
 
 JWT_SECRET_KEY = config("JWT_SECRET_KEY")
@@ -20,6 +23,13 @@ EMAIL_VERIFICATION_TOKEN_TIME_HOUR = config(
 EMAIL_PASSWORD_RESET_TOKEN_TIME_HOUR = config(
     "EMAIL_PASSWORD_RESET_TOKEN_TIME_HOUR", cast=int
 )
+
+# Mailtrap SMTP configuration for testing email sending functionality
+EMAIL_HOST = config("EMAIL_HOST")
+EMAIL_HOST_USER = config("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
+EMAIL_PORT = config("EMAIL_PORT", cast=int)
+EMAIL_SENDER = config("EMAIL_SENDER")
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -165,3 +175,32 @@ async def revoke_refresh_token(session: AsyncSession, token: str):
     if db_refresh_token:
         db_refresh_token.revoked = True
         await session.commit()
+
+
+async def send_email(
+    subject: str,
+    recipient: list[str],
+    body: str,
+    sender: str = EMAIL_SENDER,
+):
+    message = EmailMessage()
+    message["From"] = sender
+    message["To"] = ", ".join(recipient)
+    message["Subject"] = subject
+    message.set_content(body)
+
+    try:
+        result = await aiosmtplib.send(
+            message,
+            hostname=EMAIL_HOST,
+            port=EMAIL_PORT,
+            username=EMAIL_HOST_USER,
+            password=EMAIL_HOST_PASSWORD,
+            start_tls=True,  # important for 587
+        )
+
+        logger.info(f"Email sent: {result}")
+
+    except Exception as error:
+        logger.exception(f"Failed to send email {recipient}: {error}")
+        return None

@@ -1,5 +1,5 @@
 from fastapi.responses import JSONResponse
-from fastapi import APIRouter, HTTPException, status, Depends, Request
+from fastapi import APIRouter, BackgroundTasks, HTTPException, status, Depends, Request
 
 
 from app.account.models import User
@@ -109,8 +109,10 @@ async def refresh_token(session: SessionDep, request: Request):
 
 
 @router.post("/send-verification-email")
-async def send_verification_email(user: User = Depends(get_current_user)):
-    return await email_verification_send(user)
+async def send_verification_email(
+    background_tasks: BackgroundTasks, user: User = Depends(get_current_user)
+):
+    return await email_verification_send(user, background_tasks)
 
 
 @router.get("/verify-email")
@@ -130,9 +132,11 @@ async def password_change(
 
 @router.post("/send-password-reset-email")
 async def send_password_reset_email(
-    session: SessionDep, data: PasswordResetEmailRequest
+    session: SessionDep,
+    data: PasswordResetEmailRequest,
+    background_tasks: BackgroundTasks,
 ):
-    return await password_reset_email_send(session, data)
+    return await password_reset_email_send(session, data, background_tasks)
 
 
 @router.post("/verify-password-reset-token")

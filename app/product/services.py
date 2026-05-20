@@ -38,6 +38,23 @@ async def get_all_categories(session: AsyncSession) -> list[CategoryResponse]:
     return result.scalars().all()
 
 
+async def update_category(session, category_id: int, data):
+    query = select(Category).where(Category.id == category_id)
+    result = await session.execute(query)
+
+    category = result.scalar_one_or_none()
+
+    if not category:
+        return None
+
+    category.name = data.name
+
+    await session.commit()
+    await session.refresh(category)
+
+    return category
+
+
 async def delete_category(session: AsyncSession, category_id: int) -> bool:
     """Delete a category by ID."""
     category = await session.get(Category, category_id)

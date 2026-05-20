@@ -1,6 +1,6 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import HTTPException, status
+from fastapi import BackgroundTasks, HTTPException, status
 
 from app.account.models import User
 from app.account.schemas import (
@@ -17,7 +17,12 @@ from app.account.utils import (
     hash_password,
     verify_email_token_and_get_user_id,
     verify_password,
+    send_email,
 )
+
+from decouple import config
+
+FRONTEND_URL = config("FRONTEND_URL")
 
 
 async def create_user(session: AsyncSession, user: UserCreate):
@@ -54,11 +59,19 @@ async def authenticate_user(session: AsyncSession, user_login: UserLogin):
     return user
 
 
-async def email_verification_send(user: User):
+async def email_verification_send(
+    user: User, background_tasks: BackgroundTasks
+):  # bg task
     """Generate an email verification token for the user."""
     token = create_email_verification_token(user.id)
-    link = f"http://localhost:8000/account/verify?token={token}"
+    link = f"{FRONTEND_URL}/user/verify-email?token={token}"
     print(f"Email verification link for {user.email}: {link}")
+    background_tasks.add_task(
+        send_email,
+        subject="Verify your email",
+        recipient=[user.email],
+        body=f"Please click the following link to verify your email: {link}",
+    )
     return {"msg": "Verification email sent (check console for link)"}
 
 
@@ -104,7 +117,9 @@ async def change_password(
 
 
 async def password_reset_email_send(
-    session: AsyncSession, data: PasswordResetEmailRequest
+    session: AsyncSession,
+    data: PasswordResetEmailRequest,
+    background_tasks: BackgroundTasks,
 ):
     """Generate a password reset token and send it to the user's email."""
     user = await get_user_by_email(session, data.email)
@@ -115,8 +130,14 @@ async def password_reset_email_send(
         )
 
     token = create_password_reset_token(user.id)
-    link = f"http://localhost:8000/account/password-reset?token={token}"
+    link = f"{FRONTEND_URL}/account/password-reset?token={token}"
     print(f"Password reset link for {user.email}: {link}")
+    background_tasks.add_task(
+        send_email,
+        subject="Reset your password",
+        recipient=[user.email],
+        body=f"Please click the following link to reset your password: {link}",
+    )
     return {"msg": "Password reset email sent (check console for link)"}
 
 
